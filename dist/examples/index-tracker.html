@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Triangle Tracker Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+    }
+
+    #touchBox {
+      width: 100%;
+      height: 70%;
+      background-color: #f5f5f5;
+      border: 2px dashed #cccccc;
+      position: relative;
+    }
+
+    #resultBox {
+      width: 100%;
+      height: 20%;
+    }
+
+    #resultBox table {
+      padding-top: 20px;
+      width: 100%;
+      height: 100%;
+      border-spacing: 10px;
+      border-collapse: separate;
+    }
+
+    #resultBox table td,
+    #resultBox table th {
+      text-align: center;
+      vertical-align: middle;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: normal;
+      padding: 20px;
+      border: 1px solid #ccc;
+      width: 12.5%;
+    }
+
+    #resultBox table th {
+      padding: 10px;
+      font-size: 24px;
+      font-weight: normal;
+      height: 30px;
+    }
+
+    #resultBox table th.active {
+      background-color: #ffff00;
+    }
+  </style>
+<script type="text/javascript" src="../js/tritra.js"></script></head>
+
+<body>
+
+  <div id="touchBox"></div>
+  <div id="resultBox">
+    <table>
+      <thead>
+        <tr>
+          <th id="detect-0-head">#1</th>
+          <th id="detect-1-head">#2</th>
+          <th id="detect-2-head">#3</th>
+          <th id="detect-3-head">#4</th>
+          <th id="detect-4-head">#5</th>
+          <th id="detect-5-head">#6</th>
+          <th id="detect-6-head">#7</th>
+          <th id="detect-7-head">#8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="detect-0"></td>
+          <td id="detect-1"></td>
+          <td id="detect-2"></td>
+          <td id="detect-3"></td>
+          <td id="detect-4"></td>
+          <td id="detect-5"></td>
+          <td id="detect-6"></td>
+          <td id="detect-7"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    (function() {
+
+      // define angles
+      var apexAngles = [18, 36, 54, 72, 90, 108, 126, 144];
+
+      // create headlines
+      for(var i = 0; i < apexAngles.length; i++) {
+        document.getElementById('detect-' + i + '-head').innerHTML = ('#' + (i+1) + ' (' + apexAngles[i] + '&deg;)');
+      }
+
+      // create recognizer instance
+      var R = new tritra.Recognizer(apexAngles, {
+
+        /*
+          Apex angles have a distance of 18 degrees each therefore we choose
+          18 / 2 = 9 degrees of tolerance to each side. You can go lower than
+          that if your application doesn't require markers to be moved quickly.
+        */
+        maxAngleTolerance: 9,
+
+        /*
+          The maximum distance for two points to still be considered as part of
+          the same triangle. You should adjust these according to your screen
+          size and DPI. As a general rule, the larger the screen and the higher
+          the DPI, the higher you should set this value.
+          Do not set it too high though as this will cause two nearby markers to
+          no longer be recognized.
+        */
+        maxPointDistance: 170
+      });
+
+      var touchHandlerImpl = function(touches, eventType) {
+
+        var points = [];
+        for(var i = 0; i < touches.length; i++) {
+          points.push(
+            new tritra.Vector2d(touches[i].clientX, touches[i].clientY)
+          );
+        }
+
+        // clear previous results
+        for(var i = 0; i < apexAngles.length; i++) {
+          document.getElementById('detect-' + i + '-head').classList.remove('active');
+          document.getElementById('detect-' + i).innerHTML = '';
+        }
+
+        /*
+          Find matching triangles
+
+          IMPORTANT: For performance reasons you should NOT trigger this
+          function directly from your touch events. Instead simply store the
+          touch coordinates and synchronize the processing with the actual
+          screen refresh rate (ex: 60hz) by using requestAnimationFrame()
+
+          For achieving a really smooth user experience you should additionally
+          outsource the triangle processing into a separate webworker process.
+          This way you will be able to achieve a steady 60fps user experience.
+        */
+        var matches = R.findMatches(points);
+
+        // highlight the new results
+        matches.forEach(function(match) {
+
+          var innerHtml = [];
+          var center = match.getCenter();
+
+          innerHtml.push('apex ang: ' + Math.round(match.getApexAngle()));
+          innerHtml.push('center pt: ' + Math.round(center.x) + ', ' + Math.round(center.y));
+          innerHtml.push('orient: ' + Math.round(match.getOrientation()) + '&deg;');
+
+          document.getElementById('detect-' + match.index + '-head').classList.add('active');
+          document.getElementById('detect-' + match.index).innerHTML = innerHtml.join('<br>');
+        });
+      };
+
+      var touchHandler = function(event, eventType) {
+        touchHandlerImpl(event.touches, eventType);
+        event.preventDefault();
+      };
+
+      var touchBox = document.getElementById('touchBox');
+
+      // attach touch event handlers
+      touchBox.addEventListener("touchstart", function(e) { touchHandler(e, 'start'); });
+      touchBox.addEventListener("touchmove", function(e) { touchHandler(e, 'move'); });
+      touchBox.addEventListener("touchend", function(e) { touchHandler(e, 'end'); });
+      touchBox.addEventListener("touchcancel", function(e) { touchHandler(e, 'cancel'); });
+    })();
+  </script>
+
+</body>
+</html>
