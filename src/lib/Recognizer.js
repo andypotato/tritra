@@ -8,10 +8,10 @@ export default class Recognizer {
 
   /**
    * Main recognizer instance
-   * @param {number[]} apexAngles Apex angles you want to track
+   * @param {number[]} vertexAngles Apex angles you want to track
    * @param {Object} options Configuration options
    */
-  constructor(apexAngles, options = {}) {
+  constructor(vertexAngles, options = {}) {
 
     // read options
     this.options = {...{
@@ -20,7 +20,7 @@ export default class Recognizer {
     }, ...options};
 
     // apex angles to identify
-    this.apexAngles = apexAngles;
+    this.apexAngles = vertexAngles;
   }
 
   /**
