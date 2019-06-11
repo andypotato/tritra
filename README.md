@@ -2,9 +2,13 @@
 
 A simple library for identifying isosceles triangles within a set of 2d points.
 
+![Isosceles triangle](https://cdn-images-1.medium.com/max/800/1*Dob2IVEhkqHsHqYXEe0eYg.png "Isosceles triangle")
+
 ## Motivation
 
 I was working on building an interactive touchscreen table with object recognition features. This concept uses marker discs with a distinct isosceles triangle pattern to distinguish objects, therefore I needed a library to handle all the math for identifying and tracking these triangles.
+
+[You can find more information about this project here if you're interested](https://medium.com/@andreas.schallwig/building-your-own-interactive-touchscreen-table-with-object-recognition-768b663ccce8 "You can find more information about this project here if you're interested").
 
 ## Features
 
@@ -23,8 +27,6 @@ $ npm i --save tritra
 Alternatively you can simply copy `dist/js/tritra.js` to your project.
 
 ## Usage
-
-### Quickstart
 
 Include the package in your HTML page:
 ```html
@@ -67,13 +69,89 @@ console.log(match.matchedAngle);
 36
 
 // properties of the matched triangle
-var centerPoint = match.triangle.getCenter();
+var centerPoint = match.getCenter();
 console.log(centerPoint.x, centerPoint.y);
 333, 266
 
 // get the rotation (orientation) of the triangle in degrees
-console.log(match.triangle.getOrientation());
+console.log(match.getOrientation());
 -180
 ```
 More properties are available. Check the documentation of `tritra.Match` or have a look at the included [example HTML file](https://github.com/andypotato/tritra/blob/master/dist/examples/index-tracker.html "example HTML file").
 
+## Documentation
+
+### tritra.Recognizer(vertexAngles, [options])
+
+The main recognizer class which will identify triangles for you
+
+##### vertexAngles `Array` `required`
+
+An array of vertex angles of the isosceles triangles you want to identify. You must provide at least one vertex angle.
+
+#### Parameters
+
+##### options `object` `{}`
+
+Currently supports two options:
+
+**maxPointDistance (default: 150):** The maximum distance for two points to still be considered as part of the same triangle. You should adjust these according to your screen size and DPI.
+
+As a general rule, the larger the screen and the higher the DPI, the higher you should set this value. Do not set it too high though as this will cause two nearby markers to no longer be recognized.
+
+** maxAngleTolerance (default: 5):** The recognizer will consider vertex angles +- this value (in degrees) as still matching the nearest vertex angle. Do not set this value higher than half of the smallest distance between your configured vertex angles.
+
+#### Methods
+
+##### findMatches(points)
+
+##### points `Array`
+An array of `tritra.Vector2d` objects containing the points you want to analyze
+
+Returns an array of `tritra.Matches` objects describing the identified triangles.
+
+### tritra.Vector2d(x, y)
+
+Simple wrapper object for a point in 2d space with x and y coordinates.
+
+### tritra.Triangle(p1, p2, p3)
+
+Represents a triangle defined by three points in 2d space. Points are expected as `tritra.Vector2d` objects.
+
+#### Methods
+
+##### getOrientation()
+
+Returns the clockwise orientation of the triangle in degrees as seen from its vertex angle. The vertex angle pointing south translates to zero degrees.
+
+##### getWidth()
+
+Returns the width of the triangle.
+
+##### getAltitude()
+
+Returns the height of the triangle.
+
+##### getApexAngle()
+
+Returns the vertex angle (apex angle) of the triangle.
+
+##### getApex()
+
+Returns a `tritra.Vector2d` coordinate representing the vertex point (apex point) of the triangle.
+
+##### getCenter()
+
+Returns a `tritra.Vector2d` coordinate representing the center point of the triangle.
+
+### tritra.Match()
+
+Represents a match found by the recognizer based on a requested vertex angle. You will usually not create instances of this object by yourself but instead the recognizer will create it for you.
+
+#### Properties
+
+**index:** The index of the matched angle within your original vertexAngles parameter
+
+**matchedAngle:** The matched angle. This is not the actual vertex angle but the configured vertex angle within the acceptable "maxAngleTolerance" (see above).
+
+**triangle:** The raw matched `tritra.Triangle` object
