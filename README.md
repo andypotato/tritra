@@ -99,7 +99,7 @@ Currently supports two options:
 
 As a general rule, the larger the screen and the higher the DPI, the higher you should set this value. Do not set it too high though as this will cause two nearby markers to no longer be recognized.
 
-** maxAngleTolerance (default: 5):** The recognizer will consider vertex angles +- this value (in degrees) as still matching the nearest vertex angle. Do not set this value higher than half of the smallest distance between your configured vertex angles.
+**maxAngleTolerance (default: 5):** The recognizer will consider vertex angles +- this value (in degrees) as still matching the nearest vertex angle. Do not set this value higher than half of the smallest distance between your configured vertex angles.
 
 #### Methods
 
